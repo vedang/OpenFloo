@@ -1,0 +1,575 @@
+diff -urN All pristine sources/colinux0.8.0/src/colinux/common/file_ids.c colinux0.8.0/src/colinux/common/file_ids.c
+--- All pristine sources/colinux0.8.0/src/colinux/common/file_ids.c	1970-01-01 05:30:00.000000000 +0530
++++ colinux0.8.0/src/colinux/common/file_ids.c	2008-01-30 11:27:41.000000000 +0530
+@@ -0,0 +1,85 @@
++#include <stdlib.h>
++const char *colinux_obj_filenames[] = {
++     "src/colinux/os/linux/user/daemon/main.c", 
++     "src/colinux/common/libc.c", 
++     "src/colinux/os/linux/user/daemon/debug.c", 
++     "src/colinux/os/linux/user/cobdpath.c", 
++     "src/colinux/os/linux/user/file-write.c", 
++     "src/colinux/os/linux/user/manager.c", 
++     "src/colinux/os/linux/user/file.c", 
++     "src/colinux/os/linux/user/exec.c", 
++     "src/colinux/os/linux/user/misc.c", 
++     "src/colinux/os/linux/user/file-unlink.c", 
++     "src/colinux/os/linux/user/unix.c", 
++     "src/colinux/os/linux/user/process.c", 
++     "src/colinux/os/linux/user/alloc.c", 
++     "src/colinux/os/linux/user/reactor.c", 
++     "src/colinux/user/debug.c", 
++     "src/colinux/user/macaddress.c", 
++     "src/colinux/user/monitor-find.c", 
++     "src/colinux/user/elf_load.c", 
++     "src/colinux/user/manager.c", 
++     "src/colinux/user/config.c", 
++     "src/colinux/user/cmdline.c", 
++     "src/colinux/user/pidfile.c", 
++     "src/colinux/user/daemon.c", 
++     "src/colinux/user/monitor.c", 
++     "src/colinux/user/reactor.c", 
++     "src/colinux/common/queue.c", 
++     "src/colinux/common/console.c", 
++     "src/colinux/common/debug.c", 
++     "src/colinux/common/errors.c", 
++     "src/colinux/common/messages.c", 
++     "src/colinux/common/snprintf.c", 
++     "src/colinux/common/unicode.c", 
++     "src/colinux/os/linux/user/conet-daemon/daemon.cpp", 
++     "src/colinux/os/linux/user/conet-daemon/tap.c", 
++     "src/colinux/user/daemon-base/main.cpp", 
++     "src/colinux/os/linux/user/conet-slirp-daemon/main.c", 
++     "src/colinux/user/slirp/if.c", 
++     "src/colinux/user/slirp/ip_input.c", 
++     "src/colinux/user/slirp/debug.c", 
++     "src/colinux/user/slirp/ip_output.c", 
++     "src/colinux/user/slirp/co_main.c", 
++     "src/colinux/user/slirp/tcp_input.c", 
++     "src/colinux/user/slirp/udp.c", 
++     "src/colinux/user/slirp/ip_icmp.c", 
++     "src/colinux/user/slirp/slirp.c", 
++     "src/colinux/user/slirp/tcp_subr.c", 
++     "src/colinux/user/slirp/mbuf.c", 
++     "src/colinux/user/slirp/misc.c", 
++     "src/colinux/user/slirp/tcp_timer.c", 
++     "src/colinux/user/slirp/sbuf.c", 
++     "src/colinux/user/slirp/tftp.c", 
++     "src/colinux/user/slirp/bootp.c", 
++     "src/colinux/user/slirp/tcp_output.c", 
++     "src/colinux/user/slirp/socket.c", 
++     "src/colinux/user/slirp/cksum.c", 
++     "src/colinux/os/linux/user/console/head.cpp", 
++     "src/colinux/user/console/widget.cpp", 
++     "src/colinux/user/console/main.cpp", 
++     "src/colinux/user/console/console.cpp", 
++     "src/colinux/user/console/about.cpp", 
++     "src/colinux/user/console/select_monitor.cpp", 
++     "src/colinux/os/linux/user/debug/main.c", 
++     "src/colinux/user/debug/main.c", 
++     "src/colinux/os/linux/user/coserial-daemon/main.c", 
++     "src/colinux/os/linux/kernel/core.c", 
++     "src/colinux/arch/current/cpuid.c", 
++     "src/colinux/arch/current/interrupt.c", 
++     "src/colinux/arch/current/antinx.c", 
++     "src/colinux/arch/current/passage.c", 
++     "src/colinux/arch/current/apic.c", 
++     "src/colinux/arch/current/manager.c", 
++     "src/colinux/arch/current/utils.c", 
++     "src/colinux/kernel/debug.c", 
++     "src/colinux/kernel/transfer.c", 
++     "src/colinux/kernel/manager.c", 
++     "src/colinux/kernel/fileblock.c", 
++     "src/colinux/kernel/pages.c", 
++     "src/colinux/kernel/filesystem.c", 
++     "src/colinux/kernel/reversedpfns.c", 
++     "src/colinux/kernel/block.c", 
++     "src/colinux/kernel/monitor.c", 
++ NULL,
++};
+diff -urN All pristine sources/colinux0.8.0/src/colinux/common/version.h colinux0.8.0/src/colinux/common/version.h
+--- All pristine sources/colinux0.8.0/src/colinux/common/version.h	1970-01-01 05:30:00.000000000 +0530
++++ colinux0.8.0/src/colinux/common/version.h	2008-01-30 11:27:41.000000000 +0530
+@@ -0,0 +1,6 @@
++#ifndef __COLINUX_VERSION_H__
++#define __COLINUX_VERSION_H__
++
++#define COLINUX_VERSION      "0.8.0"
++
++#endif
+diff -urN All pristine sources/colinux0.8.0/src/colinux/kernel/manager.c colinux0.8.0/src/colinux/kernel/manager.c
+--- All pristine sources/colinux0.8.0/src/colinux/kernel/manager.c	2008-02-25 16:29:18.000000000 +0530
++++ colinux0.8.0/src/colinux/kernel/manager.c	2008-02-11 23:02:53.000000000 +0530
+@@ -14,7 +14,9 @@
+ #include <colinux/os/kernel/misc.h>
+ #include <colinux/os/kernel/mutex.h>
+ #include <colinux/arch/mmu.h>
++#include <linux/kernel.h>
+ 
++struct co_monitor;
+ #include "manager.h"
+ #include "monitor.h"
+ #include "pages.h"
+@@ -22,6 +24,19 @@
+ 
+ co_manager_t *co_global_manager = NULL;
+ 
++int co_init_handle_page_list_head(co_manager_t *manager)
++{
++    manager->co_active_connection_head=co_os_malloc(sizeof(struct co_handle_page_assoc));
++	if(manager->co_active_connection_head==NULL)
++	{
++	    printk ("Could not initialise the linked list head in manager...!!");
++	    return -1;
++	}
++	
++	co_list_init(&(manager->co_active_connection_head->handle_page_list));
++	return 0;
++}
++
+ static void set_hostmem_usage_limit(co_manager_t *manager)
+ {
+ 	if (manager->hostmem_amount >= 256 * 0x100000) {
+@@ -90,10 +105,16 @@
+ 	if (!CO_OK(rc))
+ 		goto out_err_os;
+ 
++	rc = (int)co_init_handle_page_list_head(manager);
++	if (rc==-1)
++	    goto out_err_os;
++	manager->next_handle = CO_SHARED_COMM_START_DYNAMIC_HANDLES;
++
+ 	manager->state = CO_MANAGER_STATE_INITIALIZED;
++	
++	printk("Ideally, this should be printed exactly once... no more.. no less\n");
+ 	return rc;
+ 
+-
+ /* error path */
+ out_err_os:
+ 	co_os_manager_free(manager->osdep);
+diff -urN All pristine sources/colinux0.8.0/src/colinux/kernel/manager.h colinux0.8.0/src/colinux/kernel/manager.h
+--- All pristine sources/colinux0.8.0/src/colinux/kernel/manager.h	2008-02-25 16:29:18.000000000 +0530
++++ colinux0.8.0/src/colinux/kernel/manager.h	2008-02-11 23:04:08.000000000 +0530
+@@ -15,6 +15,9 @@
+ #include <colinux/common/queue.h>
+ 
+ #include "debug.h"
++#include "shared_comm.h"
++#define CO_SHARED_COMM_START_DYNAMIC_HANDLES 128
++#define CO_SHARED_COMM_MAX_ALLOWED_HANDLES (~((unsigned long)0))
+ 
+ typedef struct co_osdep_manager *co_osdep_manager_t;
+ 
+@@ -74,6 +77,10 @@
+ 	co_list_t opens;
+ 	unsigned long num_opens;
+ 	co_os_mutex_t lock;
++
++        struct co_handle_page_assoc *co_active_connection_head;
++        unsigned long next_handle;
++
+ } co_manager_t;
+ 
+ extern co_manager_t *co_global_manager;
+diff -urN All pristine sources/colinux0.8.0/src/colinux/kernel/monitor.c colinux0.8.0/src/colinux/kernel/monitor.c
+--- All pristine sources/colinux0.8.0/src/colinux/kernel/monitor.c	2008-02-25 16:29:18.000000000 +0530
++++ colinux0.8.0/src/colinux/kernel/monitor.c	2008-02-25 12:26:52.000000000 +0530
+@@ -1,3 +1,4 @@
++
+ /*
+  * This source code is a part of coLinux source package.
+  *
+@@ -34,6 +35,154 @@
+ #include "transfer.h"
+ #include "filesystem.h"
+ #include "pages.h"
++#include <string.h>
++
++// this is communicate.h
++#include <linux/kernel.h>
++#define ERR_DUPLICATE -1
++#define ERR_OUT_OF_MEM -2
++#define ERR_CHECKOS -3
++#define ERR_NO_SUCH_HANDLE -4
++// end communicate.h
++
++unsigned long co_shared_comm_next_handle(co_manager_t *manager)
++{
++    if(manager->next_handle >= CO_SHARED_COMM_MAX_ALLOWED_HANDLES) //write code for recycling later... 
++	return -1;
++    else {
++	return (manager->next_handle++);
++    }
++}    
++
++
++struct co_handle_page_assoc * co_shared_comm_find_handle(co_monitor_t *cmon, unsigned long handle)
++{
++    co_list_t *iterator;
++    struct co_handle_page_assoc *temp;
++
++    for co_list_each(iterator, &cmon->manager->co_active_connection_head->handle_page_list){
++	temp = co_list_entry(iterator, struct co_handle_page_assoc, handle_page_list);
++	if(temp->handle == handle) 
++	    return temp;
++    }
++    printk ("error! no such handle!!\n");
++    return NULL; //remember to CHANGE THIS WITH APPROP error
++}
++
++int co_shared_comm_bind(co_monitor_t *cmon)
++{
++    struct co_handle_page_assoc *temp;
++    unsigned long handle;
++
++    handle = co_passage_page->params[0];
++    printk("In host bind operation, handle:  %lu\n", handle);
++
++    if(handle==0){ //want dynamic handle
++	co_passage_page->params[0] = co_shared_comm_next_handle(cmon->manager);
++	handle = co_passage_page->params[0];
++	printk("In host, allocating dynamic handle = %lu\n", co_passage_page->params[0]);
++    } else {  //want static handle
++	temp = co_shared_comm_find_handle(cmon, handle);
++	if (temp != NULL){
++	    printk("Error, duplicate handle.");
++	    return ERR_DUPLICATE;
++	}
++    }
++    printk("In host, Not duplicate\n");
++    temp = co_os_malloc(sizeof(struct co_handle_page_assoc));
++    if(temp == NULL) {
++	co_passage_page->params[0]=0;
++	return ERR_OUT_OF_MEM;
++    }
++    temp->handle=handle;
++    temp->src_cmon = cmon;
++    temp->dest_cmon = NULL;
++    co_list_add_tail(&(temp->handle_page_list),&(cmon->manager->co_active_connection_head->handle_page_list));
++    printk("In host, Added handle to tail: %lu\n", temp->handle);
++    return 0;
++}
++
++
++int co_shared_comm_unregister_handle(co_monitor_t *cmon)
++{
++    struct co_handle_page_assoc *temp;
++    unsigned long handle;
++    
++    handle = co_passage_page->params[0];
++    printk("In host unregister, handle:  %lu\n", handle);
++
++    temp = co_shared_comm_find_handle(cmon, handle);
++    if (temp == NULL){
++	printk ("In host, no such handle as: %lu\n", handle);
++	co_passage_page->params[0] = 0; //handle not found
++	return ERR_NO_SUCH_HANDLE;
++    }
++    co_list_del(&temp->handle_page_list);
++    co_os_free(temp);
++    printk("In host, memory freed\n");
++    co_passage_page->params[0] = 1; //not error
++    return 0;
++}
++
++
++int co_add_to_wakeup_list(co_monitor_t *cmon, unsigned long handle)
++{
++    struct co_wakeup_proc_list *temp;
++    temp = co_os_malloc(sizeof(struct co_wakeup_proc_list));
++    if(temp==NULL) return -1;
++    temp->handle = handle;
++    co_list_add_tail(&(temp->ptr), &(cmon->wakeup_proc_list_head->ptr));
++    printk("Added to wakeup list.. handle=%lu\n", handle);
++    return 0;
++}
++
++
++
++int co_shared_comm_connect(co_monitor_t *cmon)
++{
++    unsigned long handle;
++    struct co_handle_page_assoc *temp;
++    int ret;
++    
++    handle = co_passage_page->params[0];
++    temp = co_shared_comm_find_handle(cmon, handle);
++    if (temp == NULL) goto error_path;
++    if (temp->dest_cmon == NULL){
++	ret=co_add_to_wakeup_list(temp->src_cmon, handle);
++	if(ret != 0 ) goto error_path;
++	temp->src_cmon->passage_page->shared_comm_flags |= 0x1;
++	temp->dest_cmon = cmon;
++	printk("In host, passage page flag set\n");
++	co_passage_page->params[0] = 1; //not error
++	return 0;
++    }
++    
++ error_path:
++    co_passage_page->params[0]=0;
++    return ERR_NO_SUCH_HANDLE;
++}
++
++void co_shared_comm_get_wakeup_list(co_monitor_t *cmon)
++{
++    co_list_t *iterator;
++    struct co_wakeup_proc_list *temp;
++    int i=1;
++   // TODO : impose a limit on i .. so that the passage page is not overwhelmed in the worst case
++    co_passage_page->params[0] = 0;
++    
++    for co_list_each(iterator, &cmon->wakeup_proc_list_head->ptr){
++	temp = co_list_entry(iterator, struct co_wakeup_proc_list, ptr);
++	co_passage_page->params[0]++;
++	co_passage_page->params[i] = temp->handle;
++	i++;
++	iterator = temp->ptr.prev;
++	co_list_del(&temp->ptr);
++	co_os_free(temp);
++    }
++    printk("Wakeup list read... no of items read == %d\n", i);
++}    
++
++
+ 
+ co_rc_t co_monitor_malloc(co_monitor_t *cmon, unsigned long bytes, void **ptr)
+ {
+@@ -416,7 +565,7 @@
+ 	}
+ }
+ 
+-static co_rc_t co_alloc_pages(co_monitor_t *cmon, vm_ptr_t address, int num_pages)
++static co_rc_t co_alloc_pages(co_monitor_t *cmon, vm_ptr_t address, int num_pages, unsigned long handle)
+ {
+ 	unsigned long scan_address;
+ 	co_rc_t rc = CO_RC(OK);
+@@ -503,7 +652,7 @@
+ 
+ static bool_t iteration(co_monitor_t *cmon)
+ {
+-	switch (co_passage_page->operation) {
++        switch (co_passage_page->operation) {
+ 	case CO_OPERATION_FORWARD_INTERRUPT: 
+ 	case CO_OPERATION_IDLE: 
+ 		callback_return(cmon);
+@@ -526,7 +675,7 @@
+ 
+ 	case CO_OPERATION_ALLOC_PAGES: {
+ 		co_rc_t rc;
+-		rc = co_alloc_pages(cmon, co_passage_page->params[0], co_passage_page->params[1]);
++		rc = co_alloc_pages(cmon, co_passage_page->params[0], co_passage_page->params[1],co_passage_page->params[3]);
+ 		co_passage_page->params[4] = (unsigned long)(rc);
+ 		return PTRUE;
+ 	}
+@@ -606,6 +755,29 @@
+         case CO_OPERATION_TRACE_POINT: 
+                 return PTRUE;
+ 
++        case CO_OPERATION_BIND:{
++		co_shared_comm_bind(cmon);
++		return PTRUE;
++	    }
++
++	case CO_OPERATION_CONNECT:{
++	        co_shared_comm_connect(cmon);
++	    }
++
++	case CO_OPERATION_COMMUNICATE:
++	        return PTRUE;
++
++	case CO_OPERATION_UNREGISTER_HANDLE:{
++	    co_shared_comm_unregister_handle(cmon);
++	    return PTRUE;
++	}
++
++	case CO_OPERATION_GET_WAKEUP_LIST:{
++	    co_shared_comm_get_wakeup_list(cmon);
++	    return PTRUE;
++	}
++
++
+ 	default:
+ 		co_debug_lvl(context_switch, 5, "unknown operation %d not handled\n", co_passage_page->operation);
+ 		return PFALSE;
+@@ -887,12 +1059,27 @@
+ 	return CO_RC(ERROR);
+ }
+ 
++int co_init_wakeup_proc_list_head(co_monitor_t *cmon)
++{
++        cmon->wakeup_proc_list_head=co_os_malloc(sizeof(struct co_wakeup_proc_list));
++	if(cmon->wakeup_proc_list_head==NULL)
++	{
++	    printk ("Could not initialise the wakeup linked list head in monitor...!!");
++	    return -1;
++	}
++	printk("Init of monitor wakeup list done\n");
++	co_list_init(&(cmon->wakeup_proc_list_head->ptr));
++	return 0;
++}
++
++
+ 
+ co_rc_t co_monitor_create(co_manager_t *manager, co_manager_ioctl_create_t *params, co_monitor_t **cmon_out)
+ {
+ 	co_symbols_import_t *import = &params->import;
+ 	co_monitor_t *cmon;
+ 	co_rc_t rc = CO_RC_OK;
++	int ret;
+ 
+ 	cmon = co_os_malloc(sizeof(*cmon));
+ 	if (!cmon) {
+@@ -1015,6 +1202,10 @@
+ 		goto out_destroy_timer;
+ 	}
+ 
++	ret = co_init_wakeup_proc_list_head(cmon);
++	if(ret != 0) goto out_destroy_timer;
++
++
+ 	co_os_mutex_acquire(manager->lock);
+ 	cmon->refcount = 1;
+ 	manager->monitors_count++;
+diff -urN All pristine sources/colinux0.8.0/src/colinux/kernel/monitor.h colinux0.8.0/src/colinux/kernel/monitor.h
+--- All pristine sources/colinux0.8.0/src/colinux/kernel/monitor.h	2008-02-25 16:29:18.000000000 +0530
++++ colinux0.8.0/src/colinux/kernel/monitor.h	2008-02-11 23:18:03.000000000 +0530
+@@ -169,6 +169,8 @@
+ 	 */
+ 	co_info_t info;
+ 	co_arch_info_t arch_info;
++
++        struct co_wakeup_proc_list *wakeup_proc_list_head;
+ } co_monitor_t;
+ 
+ 
+diff -urN All pristine sources/colinux0.8.0/src/colinux/kernel/pages.c colinux0.8.0/src/colinux/kernel/pages.c
+--- All pristine sources/colinux0.8.0/src/colinux/kernel/pages.c	2008-02-25 16:29:18.000000000 +0530
++++ colinux0.8.0/src/colinux/kernel/pages.c	2008-02-25 08:16:00.000000000 +0530
+@@ -15,11 +15,26 @@
+ #include "pages.h"
+ #include "reversedpfns.h"
+ 
++#include <linux/co_shared_comm_vmalloc.h>
++#include <linux/kernel.h>
+ /*
+  * co_manager_get_page - allocate a page from the host,
+  * return as a PFN (page frame number).
+  */
+ 
++//==================================================
++static unsigned long co_saved_phy_address;
++static unsigned long co_saved_virt_address;
++
++struct co_shared_comm_pending_connections
++{
++    co_list_t ptr;
++    co_monitor_t *mon;
++    unsigned long virt_address;
++    unsigned long phy_address;
++};
++//=================================================
++
+ co_rc_t co_manager_get_page(struct co_manager *manager, co_pfn_t *pfn)
+ {
+ 	co_rc_t rc = CO_RC_OK;
+@@ -348,6 +363,7 @@
+ 	long virtual_pfn;
+ 	co_pfn_t physical_pfn;
+ 	unsigned long current_pfn, pfn_group, pfn_index;
++ restart_call:
+ 
+ 	/* first, allocate the page if needed. */
+ 
+@@ -367,12 +383,41 @@
+ 
+ 	physical_pfn = monitor->pp_pfns[pfn_group][pfn_index];
+ 	if (physical_pfn == 0) {
++	    if(monitor->passage_page != NULL){
++		if(monitor->passage_page->params[2]==2){//client
++   			printk("client side %x\n", co_saved_phy_address);
++			physical_pfn=co_saved_phy_address;
++			co_saved_virt_address=address;
++			rc=CO_RC(OK);
++		    }
++		}
++	    if(physical_pfn==0)
+ 		rc = co_manager_get_page(monitor->manager, &physical_pfn);
++
++	    if(monitor->passage_page != NULL){ //server side
++		    if(monitor->passage_page->params[2]==1){
++			printk(" in if, server side virtual %x\n", address);
++			co_saved_phy_address=physical_pfn;
++		    }
++		}
+ 		if (!CO_OK(rc))
+ 			return rc;
+ 
++//the following is simply pseudo-physical RAM entry... NOT to confuse with page tables
+ 		monitor->pp_pfns[pfn_group][pfn_index] = physical_pfn;
+ 	} else {
++	    if(monitor->passage_page != NULL){
++		if(monitor->passage_page->params[2]==2){ //only for client
++			printk(" in else, client side virtual %x\n", address);
++			co_monitor_free_and_unmap_page(monitor, address);
++			goto restart_call;
++			//co_saved_phy_address=physical_pfn;
++		    }
++		else if(monitor->passage_page->params[2]==1){ //only for server
++			printk(" in if, server side virtual %x\n", address);
++			co_saved_phy_address=physical_pfn;
++		    }
++		}
+ 		return CO_RC(OK);
+ 	}
+ 	
+@@ -427,7 +472,11 @@
+ 	physical_pfn = monitor->pp_pfns[pfn_group][pfn_index];
+ 	if (physical_pfn != 0) {
+ 		co_manager_set_reversed_pfn(monitor->manager, physical_pfn, 0);
+-		co_os_put_page(monitor->manager, physical_pfn);
++		if(address != co_saved_virt_address)
++		    co_os_put_page(monitor->manager, physical_pfn);
++		    else{
++		    co_saved_virt_address=0;
++		    }
+ 		monitor->pp_pfns[pfn_group][pfn_index] = 0;
+ 	}
+ 
+diff -urN All pristine sources/colinux0.8.0/src/colinux/kernel/reversedpfns.c colinux0.8.0/src/colinux/kernel/reversedpfns.c
+--- All pristine sources/colinux0.8.0/src/colinux/kernel/reversedpfns.c	2008-02-25 16:29:18.000000000 +0530
++++ colinux0.8.0/src/colinux/kernel/reversedpfns.c	2008-02-05 10:17:05.000000000 +0530
+@@ -120,6 +120,8 @@
+ 
+ co_rc_t co_manager_set_reversed_pfn(co_manager_t *manager, co_pfn_t real_pfn, co_pfn_t pseudo_pfn)
+ {
++//real_pfn = physical_pfn
++// pseudo_pfn = virtual_pfn
+ 	int entry, top_level;
+ 	co_pfn_t *reversed_pfns;
+ 	co_pfn_t mapped_pfn;
+diff -urN All pristine sources/colinux0.8.0/src/colinux/kernel/shared_comm.h colinux0.8.0/src/colinux/kernel/shared_comm.h
+--- All pristine sources/colinux0.8.0/src/colinux/kernel/shared_comm.h	1970-01-01 05:30:00.000000000 +0530
++++ colinux0.8.0/src/colinux/kernel/shared_comm.h	2008-02-11 23:18:29.000000000 +0530
+@@ -0,0 +1,16 @@
++#include <colinux/common/list.h>
++
++struct co_handle_page_assoc
++{
++    co_list_t handle_page_list;
++    unsigned long handle;
++    struct co_monitor *src_cmon;
++    struct co_monitor *dest_cmon;
++};
++
++struct co_wakeup_proc_list
++{
++    co_list_t ptr;
++    unsigned long handle;
++};
++
+diff -urN All pristine sources/colinux0.8.0/src/colinux/VERSION colinux0.8.0/src/colinux/VERSION
+--- All pristine sources/colinux0.8.0/src/colinux/VERSION	1970-01-01 05:30:00.000000000 +0530
++++ colinux0.8.0/src/colinux/VERSION	2008-01-28 01:35:55.000000000 +0530
+@@ -0,0 +1 @@
++0.8.0

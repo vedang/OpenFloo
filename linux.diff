@@ -1,0 +1,601 @@
+diff -urN linux-2.6.15/arch/i386/kernel/cooperative.c guest_kernel/copy_of_linux/arch/i386/kernel/cooperative.c
+--- linux-2.6.15/arch/i386/kernel/cooperative.c	2008-02-03 09:33:31.000000000 +0530
++++ guest_kernel/copy_of_linux/arch/i386/kernel/cooperative.c	2008-02-25 23:29:42.000000000 +0530
+@@ -10,6 +10,7 @@
+ #include <asm/mmu_context.h>
+ #include <asm/debugreg.h>
+ #include <asm/i387.h>
++#include <linux/module.h>
+ 
+ CO_TRACE_STOP;
+ 
+@@ -238,12 +239,14 @@
+ 
+ 	co_switch_wrapper_protected();
+ }
++EXPORT_SYMBOL(co_switch_wrapper);
+ 
+ void co_passage_page_acquire(unsigned long *flags)
+ {
+ 	local_irq_save(*flags);
+ 	co_passage_page_holding_count++;
+ }
++EXPORT_SYMBOL(co_passage_page_acquire);
+ 
+ void co_passage_page_ref_down(void)
+ {
+@@ -259,13 +262,13 @@
+ {
+ 	return co_passage_page_holding_count;
+ }
+-
++EXPORT_SYMBOL(co_passage_page_held);
+ void co_passage_page_release(unsigned long flags)
+ {
+ 	co_passage_page_holding_count--;
+ 	local_irq_restore(flags);
+ }
+-
++EXPORT_SYMBOL(co_passage_page_release);
+ void co_debug(const char *fmt, ...)
+ {
+ }
+diff -urN linux-2.6.15/arch/i386/kernel/setup.c guest_kernel/copy_of_linux/arch/i386/kernel/setup.c
+--- linux-2.6.15/arch/i386/kernel/setup.c	2008-02-03 09:33:31.000000000 +0530
++++ guest_kernel/copy_of_linux/arch/i386/kernel/setup.c	2008-02-25 23:29:42.000000000 +0530
+@@ -1141,7 +1141,7 @@
+ 		max_low_pfn = max_pfn = co_boot_params.co_memory_size / PAGE_SIZE;
+ 		min_low_pfn = PFN_UP(__pa((unsigned long)&_end)) + 0x10;
+ 		start_va = (unsigned long)__va(min_low_pfn << PAGE_SHIFT);
+-		co_alloc_pages(start_va, 0x20);
++		co_alloc_pages(start_va, 0x20, 0, 0);
+ 	} else {
+ 		find_max_pfn();
+ 
+diff -urN linux-2.6.15/include/asm-i386/cooperative.h guest_kernel/copy_of_linux/include/asm-i386/cooperative.h
+--- linux-2.6.15/include/asm-i386/cooperative.h	2008-02-03 09:33:31.000000000 +0530
++++ guest_kernel/copy_of_linux/include/asm-i386/cooperative.h	2008-02-25 23:30:59.000000000 +0530
+@@ -156,6 +156,7 @@
+ 			co_arch_state_stack_t host_state;
+ 			co_arch_state_stack_t linuxvm_state;
+ 
++		    unsigned long shared_comm_flags;
+ 			/* Control parameters */
+ 			unsigned long operation;
+ 			unsigned long params[];
+diff -urN linux-2.6.15/include/linux/cooperative.h guest_kernel/copy_of_linux/include/linux/cooperative.h
+--- linux-2.6.15/include/linux/cooperative.h	2008-02-03 09:33:31.000000000 +0530
++++ guest_kernel/copy_of_linux/include/linux/cooperative.h	2008-02-25 23:30:51.000000000 +0530
+@@ -42,6 +42,11 @@
+ 	CO_OPERATION_FREE_PAGES,
+ 	CO_OPERATION_ALLOC_PAGES,
+ 	CO_OPERATION_PRINTK,
++	CO_OPERATION_BIND,
++	CO_OPERATION_CONNECT,
++	CO_OPERATION_COMMUNICATE,
++	CO_OPERATION_UNREGISTER_HANDLE,
++	CO_OPERATION_GET_WAKEUP_LIST,
+ } co_operation_t;
+ 
+ #define CO_MODULE_MAX_CONET    16
+diff -urN linux-2.6.15/include/linux/cooperative_internal.h guest_kernel/copy_of_linux/include/linux/cooperative_internal.h
+--- linux-2.6.15/include/linux/cooperative_internal.h	2008-02-03 09:33:31.000000000 +0530
++++ guest_kernel/copy_of_linux/include/linux/cooperative_internal.h	2008-02-25 23:30:52.000000000 +0530
+@@ -30,7 +30,7 @@
+ extern void co_terminate(co_termination_reason_t reason);
+ extern void co_terminate_bug(int code, int line, const char *file);
+ extern void co_free_pages(unsigned long vaddr, int order);
+-extern int co_alloc_pages(unsigned long vaddr, int order);
++extern int co_alloc_pages(unsigned long vaddr, int order, unsigned long handle, unsigned long comm_flags);
+ extern void co_start_kernel(void);
+ extern void co_arch_start_kernel(void);
+ extern void co_handle_jiffies(long count);
+diff -urN linux-2.6.15/include/linux/co_shared_comm.h guest_kernel/copy_of_linux/include/linux/co_shared_comm.h
+--- linux-2.6.15/include/linux/co_shared_comm.h	1970-01-01 05:30:00.000000000 +0530
++++ guest_kernel/copy_of_linux/include/linux/co_shared_comm.h	2008-02-25 23:30:51.000000000 +0530
+@@ -0,0 +1,6 @@
++struct shared_comm_ops{
++    void (*wakeup_proc)(void);
++};
++
++extern struct shared_comm_ops comm_fops;
++extern void wakeup_sleeping_process(void);
+diff -urN linux-2.6.15/include/linux/co_shared_comm_vmalloc.h guest_kernel/copy_of_linux/include/linux/co_shared_comm_vmalloc.h
+--- linux-2.6.15/include/linux/co_shared_comm_vmalloc.h	1970-01-01 05:30:00.000000000 +0530
++++ guest_kernel/copy_of_linux/include/linux/co_shared_comm_vmalloc.h	2008-02-25 23:30:51.000000000 +0530
+@@ -0,0 +1,3 @@
++#define CO_SHARED_COMM_SERVER 0x4
++#define CO_SHARED_COMM_CLIENT 0x8
++#define CO_SHARED_COMM_NONE 0x0
+diff -urN linux-2.6.15/include/linux/gfp.h guest_kernel/copy_of_linux/include/linux/gfp.h
+--- linux-2.6.15/include/linux/gfp.h	2006-01-03 08:51:10.000000000 +0530
++++ guest_kernel/copy_of_linux/include/linux/gfp.h	2008-02-25 23:30:51.000000000 +0530
+@@ -47,6 +47,9 @@
+ #define __GFP_ZERO	((__force gfp_t)0x8000u)/* Return zeroed page on success */
+ #define __GFP_NOMEMALLOC ((__force gfp_t)0x10000u) /* Don't use emergency reserves */
+ #define __GFP_HARDWALL   ((__force gfp_t)0x20000u) /* Enforce hardwall cpuset memory allocs */
++#define __GFP_SHARED_COMM_SERVER ((__force gfp_t)0x40000u) /* Don't use */
++#define __GFP_SHARED_COMM_CLIENT ((__force gfp_t)0x80000u) /* Don't use */
++//shared_comm_change ==============
+ 
+ #define __GFP_BITS_SHIFT 20	/* Room for 20 __GFP_FOO bits */
+ #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
+@@ -55,7 +58,8 @@
+ #define GFP_LEVEL_MASK (__GFP_WAIT|__GFP_HIGH|__GFP_IO|__GFP_FS| \
+ 			__GFP_COLD|__GFP_NOWARN|__GFP_REPEAT| \
+ 			__GFP_NOFAIL|__GFP_NORETRY|__GFP_NO_GROW|__GFP_COMP| \
+-			__GFP_NOMEMALLOC|__GFP_HARDWALL)
++			__GFP_NOMEMALLOC|__GFP_HARDWALL|__GFP_SHARED_COMM_SERVER|__GFP_SHARED_COMM_CLIENT)
++//shared_comm_change ===============
+ 
+ #define GFP_ATOMIC	(__GFP_HIGH)
+ #define GFP_NOIO	(__GFP_WAIT)
+@@ -73,6 +77,17 @@
+ /* 4GB DMA on some platforms */
+ #define GFP_DMA32	__GFP_DMA32
+ 
++//fighter kombdas: for shared mem comm
++
++extern struct page *
++FASTCALL(co_shared_comm_alloc_pages(gfp_t, unsigned int, struct zonelist *, unsigned long));
++
++
++extern unsigned long FASTCALL(co_shared_comm_get_free_pages(gfp_t gfp_mask, unsigned int order, unsigned long handle));
++
++//==========
++
++
+ 
+ static inline int gfp_zone(gfp_t gfp)
+ {
+@@ -158,3 +173,6 @@
+ #endif
+ 
+ #endif /* __LINUX_GFP_H */
++
++
++
+diff -urN linux-2.6.15/include/linux/version.h guest_kernel/copy_of_linux/include/linux/version.h
+--- linux-2.6.15/include/linux/version.h	1970-01-01 05:30:00.000000000 +0530
++++ guest_kernel/copy_of_linux/include/linux/version.h	2008-02-25 23:30:53.000000000 +0530
+@@ -0,0 +1,3 @@
++#define UTS_RELEASE "2.6.15-co-0.8.0"
++#define LINUX_VERSION_CODE 132623
++#define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
+diff -urN linux-2.6.15/include/linux/vmalloc.h guest_kernel/copy_of_linux/include/linux/vmalloc.h
+--- linux-2.6.15/include/linux/vmalloc.h	2006-01-03 08:51:10.000000000 +0530
++++ guest_kernel/copy_of_linux/include/linux/vmalloc.h	2008-02-25 23:30:50.000000000 +0530
+@@ -40,6 +40,7 @@
+ 				pgprot_t prot);
+ extern void *__vmalloc_node(unsigned long size, gfp_t gfp_mask,
+ 				pgprot_t prot, int node);
++
+ extern void vfree(void *addr);
+ 
+ extern void *vmap(struct page **pages, unsigned int count,
+diff -urN linux-2.6.15/kernel/cooperative.c guest_kernel/copy_of_linux/kernel/cooperative.c
+--- linux-2.6.15/kernel/cooperative.c	2008-02-03 09:33:31.000000000 +0530
++++ guest_kernel/copy_of_linux/kernel/cooperative.c	2008-02-25 23:30:33.000000000 +0530
+@@ -384,16 +384,26 @@
+ 	co_passage_page_release(flags);
+ }
+ 
+-int co_alloc_pages(unsigned long vaddr, int order)
++int co_alloc_pages(unsigned long vaddr, int order, unsigned long handle, unsigned long comm_flags)
+ {
+-	unsigned long flags;
++    unsigned long flags;
+ 	long result;
+ 
+-	co_passage_page_acquire(&flags);
++	co_passage_page_acquire(&flags);	
++	co_passage_page->params[2]=0;
++	if(comm_flags & 0x1) {
++	    co_passage_page->params[2]=1; //server
++	}
++	else if(comm_flags & 0x2){
++	    co_passage_page->params[2]=2; //client
++	}
++	
+ 	co_passage_page->operation = CO_OPERATION_ALLOC_PAGES;
+ 	co_passage_page->params[0] = vaddr;
+ 	co_passage_page->params[1] = order;
++	co_passage_page->params[3]=handle;
+ 	co_switch_wrapper();
++
+ 	result = (long)co_passage_page->params[4];
+ 	co_passage_page_release(flags);
+ 
+diff -urN linux-2.6.15/kernel/sched.c guest_kernel/copy_of_linux/kernel/sched.c
+--- linux-2.6.15/kernel/sched.c	2006-01-03 08:51:10.000000000 +0530
++++ guest_kernel/copy_of_linux/kernel/sched.c	2008-02-25 23:30:33.000000000 +0530
+@@ -50,6 +50,9 @@
+ #include <asm/tlb.h>
+ 
+ #include <asm/unistd.h>
++#include <linux/cooperative_internal.h>
++#include <linux/co_shared_comm.h>
++#include <linux/kernel.h>
+ 
+ /*
+  * Convert user-nice values [ -20 ... 0 ... 19 ]
+@@ -2938,6 +2941,17 @@
+ 
+ #endif
+ 
++void wakeup_sleeping_process(void)
++{
++    printk("Not hooked yet\n");
++}
++
++
++struct shared_comm_ops comm_fops = {
++    .wakeup_proc = wakeup_sleeping_process,
++};
++EXPORT_SYMBOL(comm_fops);
++
+ /*
+  * schedule() is the main scheduler function.
+  */
+@@ -2952,6 +2966,15 @@
+ 	unsigned long run_time;
+ 	int cpu, idx, new_prio;
+ 
++	if(unlikely(co_passage_page->shared_comm_flags & 0x1))
++	{
++	    printk("Interrupt found....!!\n");
++	    co_passage_page->shared_comm_flags &= ~(0x1);
++	    comm_fops.wakeup_proc();
++	}
++	
++	
++	
+ 	/*
+ 	 * Test if we are atomic.  Since do_exit() needs to call into
+ 	 * schedule() atomically, we ignore that path for now.
+diff -urN linux-2.6.15/localversion-cooperative guest_kernel/copy_of_linux/localversion-cooperative
+--- linux-2.6.15/localversion-cooperative	1970-01-01 05:30:00.000000000 +0530
++++ guest_kernel/copy_of_linux/localversion-cooperative	2008-02-25 23:29:53.000000000 +0530
+@@ -0,0 +1 @@
++-co-0.8.0
+diff -urN linux-2.6.15/mm/bootmem.c guest_kernel/copy_of_linux/mm/bootmem.c
+--- linux-2.6.15/mm/bootmem.c	2008-02-03 09:33:31.000000000 +0530
++++ guest_kernel/copy_of_linux/mm/bootmem.c	2008-02-25 23:29:25.000000000 +0530
+@@ -278,7 +278,7 @@
+ 		alloc_address &= PAGE_MASK;
+ 		alloc_size = (alloc_size + PAGE_SIZE - 1) >> PAGE_SHIFT;
+ 
+-		result = co_alloc_pages(alloc_address, alloc_size);
++		result = co_alloc_pages(alloc_address, alloc_size, 0, 0);
+ 		if (result) {
+ 			free_bootmem((unsigned long)ret, size);
+ 			return NULL;
+diff -urN linux-2.6.15/mm/mempolicy.c guest_kernel/copy_of_linux/mm/mempolicy.c
+--- linux-2.6.15/mm/mempolicy.c	2006-01-03 08:51:10.000000000 +0530
++++ guest_kernel/copy_of_linux/mm/mempolicy.c	2008-02-25 23:29:25.000000000 +0530
+@@ -880,6 +880,7 @@
+ }
+ EXPORT_SYMBOL(alloc_pages_current);
+ 
++
+ /* Slow path of a mempolicy copy */
+ struct mempolicy *__mpol_copy(struct mempolicy *old)
+ {
+diff -urN linux-2.6.15/mm/page_alloc.c guest_kernel/copy_of_linux/mm/page_alloc.c
+--- linux-2.6.15/mm/page_alloc.c	2008-02-03 09:33:31.000000000 +0530
++++ guest_kernel/copy_of_linux/mm/page_alloc.c	2008-02-25 23:29:25.000000000 +0530
+@@ -14,6 +14,7 @@
+  *          (lots of bits borrowed from Ingo Molnar & Andrew Morton)
+  */
+ 
++#include <linux/gfp.h>
+ #include <linux/config.h>
+ #include <linux/stddef.h>
+ #include <linux/mm.h>
+@@ -41,6 +42,8 @@
+ #include <asm/tlbflush.h>
+ #include "internal.h"
+ 
++#include <linux/kernel.h>
++
+ /*
+  * MCD - HACK: Find somewhere to initialize this EARLY, or make this
+  * initializer cleaner
+@@ -717,13 +720,13 @@
+ 	free_hot_cold_page(page, 1);
+ }
+ 
+-static int co_persistent_alloc_pages(unsigned long address, int order) {
++static int co_persistent_alloc_pages(unsigned long address, int order, unsigned long handle, unsigned long comm_flags) {
+ 	int result, retries_left;
+ 
+ 	retries_left = 10;
+-
++	
+ 	while (retries_left > 0) {
+-		result = co_alloc_pages(address, order);
++		result = co_alloc_pages(address, order, handle, comm_flags);
+ 		if (result) {
+ 			unsigned long cache_size;
+ 			/* Whoops, we have allocated too much of the
+@@ -750,7 +753,7 @@
+ 
+ 	if (cooperative_mode_enabled()) {
+ 		int result;
+-		result = co_persistent_alloc_pages((unsigned long)page_address(page), 1 << order);
++		result = co_persistent_alloc_pages((unsigned long)page_address(page), 1 << order, 0, 0);
+ 		BUG_ON(result != 0);
+ 	}
+ 
+@@ -1042,8 +1045,30 @@
+ 		show_mem();
+ 	}
+ got_pg:
++	
+ 	if (cooperative_mode_enabled()) {
+-		int result = co_persistent_alloc_pages((unsigned long)page_address(page), 1 << order);
++	    int result;
++// commenting this code... should be deleted later...
++
++/*
++	    if(gfp_mask & __GFP_SHARED_COMM_SERVER){
++		printk("Server found %x\n",page_address(page));
++		gfp_mask &= ~(__GFP_SHARED_COMM_SERVER);
++		 result = co_persistent_alloc_pages((unsigned long)page_address(page), 
++						    (1 << order) | 0x1000); 
++//The ORing is to say  that it is a shared server page. assumtion= order<=11
++		
++	    }
++	    else if(gfp_mask & __GFP_SHARED_COMM_CLIENT){
++		printk("client found %x\n",page_address(page));
++		gfp_mask &= ~(__GFP_SHARED_COMM_CLIENT);
++		 result = co_persistent_alloc_pages((unsigned long)page_address(page), 
++						    (1 << order) | 0x2000); 
++//The ORing is to say  that it is a shared client page. assumtion= order<=11
++		
++	    }
++	    else*/
++		result = co_persistent_alloc_pages((unsigned long)page_address(page), 1 << order,0, 0);
+ 		if (result) {
+ 			__free_pages(page, order);
+ 			return NULL;
+@@ -1054,6 +1079,189 @@
+ 
+ EXPORT_SYMBOL(__alloc_pages);
+ 
++// Fighter kombdas code
++
++struct page * fastcall
++co_shared_comm_alloc_pages(gfp_t gfp_mask, unsigned int order,
++		struct zonelist *zonelist,unsigned long handle)
++{
++	const gfp_t wait = gfp_mask & __GFP_WAIT;
++	struct zone **z;
++	struct page *page;
++	struct reclaim_state reclaim_state;
++	struct task_struct *p = current;
++	int do_retry;
++	int alloc_flags;
++	int did_some_progress;
++
++	might_sleep_if(wait);
++
++restart:
++	z = zonelist->zones;  /* the list of zones suitable for gfp_mask */
++
++	if (unlikely(*z == NULL)) {
++		/* Should this ever happen?? */
++		return NULL;
++	}
++
++	page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, order,
++				zonelist, ALLOC_WMARK_LOW|ALLOC_CPUSET);
++	if (page)
++		goto got_pg;
++
++	do {
++		wakeup_kswapd(*z, order);
++	} while (*(++z));
++
++	/*
++	 * OK, we're below the kswapd watermark and have kicked background
++	 * reclaim. Now things get more complex, so set up alloc_flags according
++	 * to how we want to proceed.
++	 *
++	 * The caller may dip into page reserves a bit more if the caller
++	 * cannot run direct reclaim, or if the caller has realtime scheduling
++	 * policy.
++	 */
++	alloc_flags = ALLOC_WMARK_MIN;
++	if ((unlikely(rt_task(p)) && !in_interrupt()) || !wait)
++		alloc_flags |= ALLOC_HARDER;
++	if (gfp_mask & __GFP_HIGH)
++		alloc_flags |= ALLOC_HIGH;
++	if (wait)
++		alloc_flags |= ALLOC_CPUSET;
++
++	/*
++	 * Go through the zonelist again. Let __GFP_HIGH and allocations
++	 * coming from realtime tasks go deeper into reserves.
++	 *
++	 * This is the last chance, in general, before the goto nopage.
++	 * Ignore cpuset if GFP_ATOMIC (!wait) rather than fail alloc.
++	 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
++	 */
++	page = get_page_from_freelist(gfp_mask, order, zonelist, alloc_flags);
++	if (page)
++		goto got_pg;
++
++	/* This allocation should allow future memory freeing. */
++
++	if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
++			&& !in_interrupt()) {
++		if (!(gfp_mask & __GFP_NOMEMALLOC)) {
++nofail_alloc:
++			/* go through the zonelist yet again, ignoring mins */
++			page = get_page_from_freelist(gfp_mask, order,
++				zonelist, ALLOC_NO_WATERMARKS|ALLOC_CPUSET);
++			if (page)
++				goto got_pg;
++			if (gfp_mask & __GFP_NOFAIL) {
++				blk_congestion_wait(WRITE, HZ/50);
++				goto nofail_alloc;
++			}
++		}
++		goto nopage;
++	}
++
++	/* Atomic allocations - we can't balance anything */
++	if (!wait)
++		goto nopage;
++
++rebalance:
++	cond_resched();
++
++	/* We now go into synchronous reclaim */
++	p->flags |= PF_MEMALLOC;
++	reclaim_state.reclaimed_slab = 0;
++	p->reclaim_state = &reclaim_state;
++
++	did_some_progress = try_to_free_pages(zonelist->zones, gfp_mask);
++
++	p->reclaim_state = NULL;
++	p->flags &= ~PF_MEMALLOC;
++
++	cond_resched();
++
++	if (likely(did_some_progress)) {
++		page = get_page_from_freelist(gfp_mask, order,
++						zonelist, alloc_flags);
++		if (page)
++			goto got_pg;
++	} else if ((gfp_mask & __GFP_FS) && !(gfp_mask & __GFP_NORETRY)) {
++		/*
++		 * Go through the zonelist yet one more time, keep
++		 * very high watermark here, this is only to catch
++		 * a parallel oom killing, we must fail if we're still
++		 * under heavy pressure.
++		 */
++		page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, order,
++				zonelist, ALLOC_WMARK_HIGH|ALLOC_CPUSET);
++		if (page)
++			goto got_pg;
++
++		out_of_memory(gfp_mask, order);
++		goto restart;
++	}
++
++	/*
++	 * Don't let big-order allocations loop unless the caller explicitly
++	 * requests that.  Wait for some write requests to complete then retry.
++	 *
++	 * In this implementation, __GFP_REPEAT means __GFP_NOFAIL for order
++	 * <= 3, but that may not be true in other implementations.
++	 */
++	do_retry = 0;
++	if (!(gfp_mask & __GFP_NORETRY)) {
++		if ((order <= 3) || (gfp_mask & __GFP_REPEAT))
++			do_retry = 1;
++		if (gfp_mask & __GFP_NOFAIL)
++			do_retry = 1;
++	}
++	if (do_retry) {
++		blk_congestion_wait(WRITE, HZ/50);
++		goto rebalance;
++	}
++
++nopage:
++	if (!(gfp_mask & __GFP_NOWARN) && printk_ratelimit()) {
++		printk(KERN_WARNING "%s: page allocation failure."
++			" order:%d, mode:0x%x\n",
++			p->comm, order, gfp_mask);
++		dump_stack();
++		show_mem();
++	}
++got_pg:
++	
++	if (cooperative_mode_enabled()) {
++	    int result;
++
++	    if(gfp_mask & __GFP_SHARED_COMM_SERVER){
++		printk("Server found %x\n",page_address(page));
++		gfp_mask &= ~(__GFP_SHARED_COMM_SERVER);
++		 result = co_persistent_alloc_pages((unsigned long)page_address(page), 
++						    1 << order, handle, 0x1); 
++//The ORing is to say  that it is a shared server page. assumtion= order<=11
++		
++	    }
++	    else if(gfp_mask & __GFP_SHARED_COMM_CLIENT){
++		printk("client found %x\n",page_address(page));
++		gfp_mask &= ~(__GFP_SHARED_COMM_CLIENT);
++		 result = co_persistent_alloc_pages((unsigned long)page_address(page), 
++						    1 << order, handle, 0x2); 
++//The ORing is to say  that it is a shared client page. assumtion= order<=11
++		
++	    }
++	    else
++		result = co_persistent_alloc_pages((unsigned long)page_address(page), 1 << order,0, 0);
++		if (result) {
++			__free_pages(page, order);
++			return NULL;
++		}
++	}
++	return page;
++}
++
++EXPORT_SYMBOL(co_shared_comm_alloc_pages);
++//===================================================
++
+ /*
+  * Common helper functions.
+  */
+@@ -1068,6 +1276,18 @@
+ 
+ EXPORT_SYMBOL(__get_free_pages);
+ 
++//fighter kombdas code
++fastcall unsigned long co_shared_comm_get_free_pages(gfp_t gfp_mask, unsigned int order, unsigned long handle)
++{
++	struct page * page;
++	page = co_shared_comm_alloc_pages(gfp_mask, order,NODE_DATA(numa_node_id())->node_zonelists + gfp_zone(gfp_mask) , handle);
++	if (!page)
++		return 0;
++	return (unsigned long) page_address(page);
++}
++EXPORT_SYMBOL(co_shared_comm_get_free_pages);
++//======================================
++
+ fastcall unsigned long get_zeroed_page(gfp_t gfp_mask)
+ {
+ 	struct page * page;
+diff -urN linux-2.6.15/mm/vmalloc.c guest_kernel/copy_of_linux/mm/vmalloc.c
+--- linux-2.6.15/mm/vmalloc.c	2006-01-03 08:51:10.000000000 +0530
++++ guest_kernel/copy_of_linux/mm/vmalloc.c	2008-02-25 23:29:25.000000000 +0530
+@@ -20,6 +20,9 @@
+ #include <asm/uaccess.h>
+ #include <asm/tlbflush.h>
+ 
++#include <linux/cooperative_internal.h>
++#include <linux/kernel.h>
++
+ 
+ DEFINE_RWLOCK(vmlist_lock);
+ struct vm_struct *vmlist;
+@@ -436,7 +439,7 @@
+ 			goto fail;
+ 		}
+ 	}
+-
++	printk(KERN_WARNING"In alloc_page, area->addr=%x, page->addr=%x, nr_pages=%u\n", area->addr, page_address(area->pages[0]), nr_pages);
+ 	if (map_vm_area(area, prot, &pages))
+ 		goto fail;
+ 	return area->addr;
+@@ -480,6 +483,8 @@
+ }
+ EXPORT_SYMBOL(__vmalloc_node);
+ 
++
++
+ void *__vmalloc(unsigned long size, gfp_t gfp_mask, pgprot_t prot)
+ {
+ 	return __vmalloc_node(size, gfp_mask, prot, -1);
