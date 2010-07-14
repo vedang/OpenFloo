@@ -1,0 +1,5 @@
+export PATH=/home/vedang/localbin/bin:$PATH
+export PATH=/home/vedang/compiled_stuff/fltk-1.1.6/:$PATH
+export COLINUX_TARGET_KERNEL_PATH=/home/vedang/guestkernel-2.6.22/linux-2.6.22
+export COLINUX_HOST_KERNEL_DIR=/home/vedang/hostkernel-2.6.22/linux-2.6.22
+export COLINUX_HOST_OS=linux

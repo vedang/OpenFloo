@@ -1,0 +1,7 @@
+cp ../src/colinux/os/linux/build/colinux-daemon .
+cp ../src/colinux/os/linux/kernel/module/colinux.ko .
+cp ../src/colinux/os/linux/build/colinux-net-daemon .
+cp ../src/colinux/os/linux/build/colinux-serial-daemon .
+cp ../src/colinux/os/linux/build/colinux-slirp-net-daemon .
+cp ../src/colinux/os/linux/build/colinux-console-fltk .
+cp /home/vedang/guestkernel-2.6.22/linux-2.6.22/vmlinux .
